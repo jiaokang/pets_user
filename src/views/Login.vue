@@ -63,7 +63,7 @@
         <el-link type="primary">忘记密码？</el-link>
       </div>
       
-      <el-button type="primary" class="login-button" @click="handleLogin">
+      <el-button type="primary" class="login-button" :loading="loading" @click="handleLogin">
         登录
       </el-button>
       
@@ -75,6 +75,8 @@
 </template>
 
 <script>
+import { loginByAccount, loginByEmail, sendEmailCode } from '@/api/auth'
+
 export default {
   name: 'Login',
   data() {
@@ -95,6 +97,7 @@ export default {
       isCodeSending: false,
       countdown: 60,
       timer: null,
+      loading: false,
       
       accountForm: {
         username: '',
@@ -134,40 +137,94 @@ export default {
   methods: {
     async handleLogin() {
       try {
+        this.loading = true
+        
         if (this.activeTab === 'account') {
           await this.$refs.accountForm.validate()
-          // TODO: 实现账号密码登录逻辑
-          console.log('账号登录:', this.accountForm)
+          
+          // 打印请求信息，帮助调试
+          console.log('正在发送登录请求，完整URL:', process.env.VUE_APP_BASE_API + '/api/auth/login')
+          
+          const response = await loginByAccount({
+            username: this.accountForm.username,
+            password: this.accountForm.password,
+            remember: this.rememberMe
+          })
+          
+          this.handleLoginSuccess(response)
         } else {
           await this.$refs.emailForm.validate()
-          // TODO: 实现邮箱登录逻辑
-          console.log('邮箱登录:', this.emailForm)
+          
+          
+          const response = await loginByEmail({
+            email: this.emailForm.email,
+            code: this.emailForm.code,
+            remember: this.rememberMe
+          })
+          
+          this.handleLoginSuccess(response)
         }
       } catch (error) {
-        console.error('表单验证失败:', error)
+        // 增强错误信息显示
+        console.error('登录失败详情:', error)
+        if (error.response) {
+          console.error('状态码:', error.response.status)
+          console.error('响应数据:', error.response.data)
+        }
+        
+        this.$message.error(error.message || '登录失败，请重试')
+      } finally {
+        this.loading = false
       }
     },
     
-    sendVerificationCode() {
+    handleLoginSuccess(response) {
+      console.log(response)
+      // 保存token到本地存储
+      if (response.data) {
+        localStorage.setItem('token', response.data)
+        
+        // 保存用户名到本地存储
+        if (this.activeTab === 'account') {
+          localStorage.setItem('username', this.accountForm.username)
+        } else {
+          localStorage.setItem('username', this.emailForm.email)
+        }
+      }
+      
+      // 显示登录成功消息
+      this.$message.success('登录成功')
+      
+      // 跳转到首页
+      this.$router.push('/index')
+    },
+    
+    async sendVerificationCode() {
       if (this.isCodeSending) return
       
       this.$refs.emailForm.validateField('email', async (error) => {
         if (error) return
         
-        this.isCodeSending = true
-        this.countdown = 60
-        
-        // TODO: 实现发送验证码逻辑
-        console.log('发送验证码到:', this.emailForm.email)
-        
-        this.timer = setInterval(() => {
-          if (this.countdown > 0) {
-            this.countdown--
-          } else {
-            this.isCodeSending = false
-            clearInterval(this.timer)
-          }
-        }, 1000)
+        try {
+          this.isCodeSending = true
+          this.countdown = 60
+          
+          await sendEmailCode(this.emailForm.email, 'login')
+          
+          this.$message.success('验证码已发送，请查收邮件')
+          
+          this.timer = setInterval(() => {
+            if (this.countdown > 0) {
+              this.countdown--
+            } else {
+              this.isCodeSending = false
+              clearInterval(this.timer)
+            }
+          }, 1000)
+        } catch (error) {
+          this.isCodeSending = false
+          this.$message.error(error.message || '验证码发送失败，请重试')
+        }
       })
     }
   },

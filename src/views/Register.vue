@@ -68,7 +68,7 @@
           </el-checkbox>
         </el-form-item>
         
-        <el-button type="primary" class="register-button" @click="handleRegister">
+        <el-button type="primary" class="register-button" :loading="loading" @click="handleRegister">
           注册
         </el-button>
         
@@ -81,6 +81,8 @@
 </template>
 
 <script>
+import { register, sendEmailCode } from '@/api/auth'
+
 export default {
   name: 'Register',
   data() {
@@ -122,6 +124,7 @@ export default {
       isCodeSending: false,
       countdown: 60,
       timer: null,
+      loading: false,
       
       registerForm: {
         username: '',
@@ -168,33 +171,58 @@ export default {
           return
         }
         
-        // TODO: 实现注册逻辑
-        console.log('注册表单:', this.registerForm)
+        this.loading = true
+        
+        // 调用注册API
+        const response = await register({
+          username: this.registerForm.username,
+          email: this.registerForm.email,
+          password: this.registerForm.password,
+          code: this.registerForm.code
+        })
+        
+        // 注册成功处理
+        this.$message.success('注册成功，即将跳转到登录页面')
+        
+        // 延迟跳转到登录页面
+        setTimeout(() => {
+          this.$router.push('/login')
+        }, 1500)
       } catch (error) {
-        console.error('表单验证失败:', error)
+        this.$message.error(error.message || '注册失败，请重试')
+        console.error('注册失败:', error)
+      } finally {
+        this.loading = false
       }
     },
     
-    sendVerificationCode() {
+    async sendVerificationCode() {
       if (this.isCodeSending) return
       
       this.$refs.registerForm.validateField('email', async (error) => {
         if (error) return
         
-        this.isCodeSending = true
-        this.countdown = 60
-        
-        // TODO: 实现发送验证码逻辑
-        console.log('发送验证码到:', this.registerForm.email)
-        
-        this.timer = setInterval(() => {
-          if (this.countdown > 0) {
-            this.countdown--
-          } else {
-            this.isCodeSending = false
-            clearInterval(this.timer)
-          }
-        }, 1000)
+        try {
+          this.isCodeSending = true
+          this.countdown = 60
+          
+          // 调用发送验证码API
+          await sendEmailCode(this.registerForm.email, 'register')
+          
+          this.$message.success('验证码已发送，请查收邮件')
+          
+          this.timer = setInterval(() => {
+            if (this.countdown > 0) {
+              this.countdown--
+            } else {
+              this.isCodeSending = false
+              clearInterval(this.timer)
+            }
+          }, 1000)
+        } catch (error) {
+          this.isCodeSending = false
+          this.$message.error(error.message || '验证码发送失败，请重试')
+        }
       })
     }
   },
