@@ -2,7 +2,6 @@ import axios from 'axios'
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // 使用环境变量
   timeout: 10000, // 请求超时时间
   withCredentials: true // 跨域请求时发送cookies
 })
@@ -28,7 +27,15 @@ service.interceptors.response.use(
   response => {
     // 判断HTTP状态码
     if (response.status >= 200 && response.status < 300) {
-      return response.data
+      const res = response.data
+      // 判断业务状态码，假设成功的状态码是 '00000'
+      if (res.code === '00000') {
+        return res
+      } else {
+        // 业务层面的错误
+        console.error('业务错误:', res.message || '未知错误')
+        return Promise.reject(new Error(res.message || '操作失败'))
+      }
     } else {
       console.error('HTTP错误:', response.statusText)
       return Promise.reject(new Error(response.statusText || '请求失败'))

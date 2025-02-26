@@ -65,7 +65,7 @@ export default {
   },
   created() {
     // 从本地存储或其他地方获取用户名
-    const storedUsername = localStorage.getItem('username')
+    const storedUsername = localStorage.getItem('nickName')
     if (storedUsername) {
       this.username = storedUsername
     }
