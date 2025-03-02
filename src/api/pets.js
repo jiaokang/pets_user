@@ -59,47 +59,30 @@ service.interceptors.response.use(
   }
 )
 
-// 登录相关API
-export function loginByAccount(data) {
+// 添加宠物
+export function addPet(data) {
   return service({
-    url: '/api/auth/login',
+    url: '/api/pets/add',
+    method: 'post',
+    data
+  })
+}
+// 获取宠物列表
+export function getPets() {
+  return service({
+    url: '/api/pets/get',
+    method: 'get'
+  })
+}
+// 删除宠物
+export function deletePet(data) {
+  return service({
+    url: '/api/pets/delete',
     method: 'post',
     data
   })
 }
 
-export function loginByEmail(data) {
-  return service({
-    url: '/api/auth/login/email',
-    method: 'post',
-    data
-  })
-}
 
-export function register(data) {
-  return service({
-    url: '/api/auth/register',
-    method: 'post',
-    data
-  })
-}
-
-export function sendEmailCode(email, type = 'login') {
-  return service({
-    url: '/api/auth/email/code',
-    method: 'post',
-    data: {
-      email,
-      type // 可以是 'login' 或 'register'
-    }
-  })
-}
-
-export function logout() {
-  return service({
-    url: '/api/auth/logout',
-    method: 'post',
-  })
-}
 
 export default service 
