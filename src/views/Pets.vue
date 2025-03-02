@@ -2,7 +2,10 @@
   <div class="pets-container">
     <el-card class="pets-card">
       <div class="pets-header">
-        <h2>我的宠物</h2>
+        <div class="header-left">
+          <el-button type="text" icon="el-icon-back" @click="$router.push('/index')">返回主页</el-button>
+          <h2>我的宠物</h2>
+        </div>
         <el-button type="primary" icon="el-icon-plus" @click="handleAdd">添加宠物</el-button>
       </div>
 
@@ -369,6 +372,12 @@ export default {
   width: 100px;
   height: 100px;
   display: block;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 /* 响应式调整 */
