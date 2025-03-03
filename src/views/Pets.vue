@@ -73,7 +73,7 @@
 
 <script>
 
-import { addPet, getPets,deletePet } from '@/api/pets'
+import { addPet, getPets,deletePet,updatePet } from '@/api/pets'
 
 export default {
   name: 'Pets',
@@ -171,8 +171,7 @@ export default {
             this.submitLoading = true
             
             if (this.petForm.id) {
-              const index = this.pets.findIndex(pet => pet.id === this.petForm.id)
-              this.pets[index] = { ...this.petForm }
+             await updatePet(this.petForm)
             } else {
               // 调用添加宠物API
               const response = await addPet(this.petForm)

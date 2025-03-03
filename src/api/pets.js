@@ -21,7 +21,7 @@ export function addPet(data) {
 export function updatePet(data) {
   return request({
     url: '/api/pets/update',
-    method: 'put',
+    method: 'post',
     data
   })
 }
