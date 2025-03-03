@@ -21,16 +21,17 @@ export function createVaccineRecord(data) {
 // 更新疫苗接种记录
 export function updateVaccineRecord(data) {
   return request({
-    url: `/vaccine-records/${data.id}`,
-    method: 'put',
+    url: '/api/vaccine/update',
+    method: 'post',
     data
   })
 }
 
 // 删除疫苗接种记录
-export function deleteVaccineRecord(id) {
+export function deleteVaccineRecord(data) {
   return request({
-    url: `/vaccine-records/${id}`,
-    method: 'delete'
+    url: '/api/vaccine/delete',
+    method: 'post',
+    data
   })
 } 

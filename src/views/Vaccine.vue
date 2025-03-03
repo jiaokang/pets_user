@@ -210,7 +210,7 @@ export default {
         type: 'warning'
       }).then(async () => {
         try {
-          await deleteVaccineRecord(record.id)
+          await deleteVaccineRecord(record)
           this.records = this.records.filter(item => item.id !== record.id)
           this.$message.success('删除成功')
         } catch (error) {

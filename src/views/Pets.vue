@@ -19,7 +19,13 @@
             <h3>{{ pet.name }}</h3>
             <p class="pet-breed">品种：{{ pet.breed }}</p>
             <p class="pet-age">年龄：{{ pet.age }}岁</p>
-            <p class="pet-weight">体重：{{ pet.weight }}kg</p>
+            <p class="pet-sex">
+              性别：
+              <span class="gender-icon" :class="{ 'male': pet.sex === 1, 'female': pet.sex === 2 }">
+                {{ pet.sex === 1 ? '♂' : '♀' }}
+              </span>
+              {{ pet.sex === 1 ? '弟弟' : '妹妹' }}
+            </p>
           </div>
           <div class="pet-actions">
             <el-button type="text" icon="el-icon-edit" @click="handleEdit(pet)">编辑</el-button>
@@ -48,8 +54,11 @@
         <el-form-item label="年龄" prop="age">
           <el-input-number v-model="petForm.age" :min="0" :max="30" placeholder="请输入宠物年龄"></el-input-number>
         </el-form-item>
-        <el-form-item label="体重" prop="weight">
-          <el-input-number v-model="petForm.weight" :min="0" :max="100" :precision="1" placeholder="请输入宠物体重"></el-input-number>
+        <el-form-item label="性别" prop="sex">
+          <el-select v-model="petForm.sex" placeholder="请选择宠物性别">
+            <el-option label="妹妹" :value="0"></el-option>
+            <el-option label="弟弟" :value="1"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="头像">
           <el-upload
@@ -89,7 +98,7 @@ export default {
         name: '',
         breed: '',
         age: 0,
-        weight: 0,
+        sex: 0,
         avatar: ''
       },
       rules: {
@@ -132,7 +141,7 @@ export default {
         name: '',
         breed: '',
         age: 0,
-        weight: 0,
+        sex: 0,
         avatar: ''
       }
       this.dialogVisible = true
@@ -392,5 +401,18 @@ export default {
   .pets-list {
     grid-template-columns: 1fr;
   }
+}
+
+.gender-icon {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.male {
+  color: #409EFF;  /* 蓝色 */
+}
+
+.female {
+  color: #FF69B4;  /* 粉色 */
 }
 </style> 

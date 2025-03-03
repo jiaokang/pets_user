@@ -25,7 +25,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-title">驱虫提醒</span>
-              <span class="setting-desc">开启后将在驱虫日期前3天提醒</span>
+              <span class="setting-desc">开启后将在驱虫日期前7天提醒</span>
             </div>
             <el-switch
               v-model="settings.dewormingNotification"
@@ -45,41 +45,6 @@
             <el-switch
               v-model="settings.darkMode"
               @change="handleSettingChange('darkMode')">
-            </el-switch>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="setting-title">紧凑布局</span>
-              <span class="setting-desc">减小页面元素间距，显示更多内容</span>
-            </div>
-            <el-switch
-              v-model="settings.compactMode"
-              @change="handleSettingChange('compactMode')">
-            </el-switch>
-          </div>
-        </div>
-
-        <!-- 隐私设置 -->
-        <div class="settings-section">
-          <h3>隐私设置</h3>
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="setting-title">数据同步</span>
-              <span class="setting-desc">允许数据在多个设备间同步</span>
-            </div>
-            <el-switch
-              v-model="settings.dataSync"
-              @change="handleSettingChange('dataSync')">
-            </el-switch>
-          </div>
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="setting-title">使用统计</span>
-              <span class="setting-desc">帮助我们改进产品的匿名使用数据收集</span>
-            </div>
-            <el-switch
-              v-model="settings.usageStats"
-              @change="handleSettingChange('usageStats')">
             </el-switch>
           </div>
         </div>
