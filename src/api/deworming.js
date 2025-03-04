@@ -1,17 +1,18 @@
 import request from '@/utils/request'
 
 // 获取驱虫记录列表
-export function getDewormingRecords() {
+export function getDewormingRecords(petId) {
   return request({
-    url: '/deworming-records',
-    method: 'get'
+    url: '/api/deworm/get',
+    method: 'get',
+    params: { petId }
   })
 }
 
 // 创建驱虫记录
 export function createDewormingRecord(data) {
   return request({
-    url: '/deworming-records',
+    url: '/api/deworm/add',
     method: 'post',
     data
   })

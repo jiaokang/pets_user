@@ -6,7 +6,14 @@
           <el-button type="text" icon="el-icon-back" @click="$router.push('/index')">返回主页</el-button>
           <h2>驱虫记录</h2>
         </div>
-        <el-button type="primary" icon="el-icon-plus" @click="handleAdd">添加驱虫记录</el-button>
+        <div class="header-right">
+          <el-select v-model="selectedPetId" placeholder="选择宠物筛选" clearable @change="handlePetFilter"
+            class="pet-filter">
+            <el-option v-for="pet in pets" :key="pet.id" :label="pet.name" :value="pet.id">
+            </el-option>
+          </el-select>
+          <el-button type="primary" icon="el-icon-plus" @click="handleAdd">添加驱虫记录</el-button>
+        </div>
       </div>
 
       <!-- 驱虫记录列表 -->
@@ -17,11 +24,13 @@
           </div>
           <div class="record-info">
             <h3>{{ record.petName }}</h3>
-            <p class="medicine-name">驱虫药名称：{{ record.medicineName }}</p>
-            <p class="medicine-date">驱虫日期：{{ formatDate(record.medicineDate) }}</p>
+            <p class="medicine-name">驱虫药类型：{{ getDewormType(record.dewormType) }}</p>
+            <p class="medicine-name">驱虫药名称：{{ record.productName }}</p>
+            <p class="dosage">用药剂量：{{ record.metering }}ml</p>
+            <p class="medicine-date">驱虫日期：{{ formatDate(record.dewormDate) }}</p>
             <p class="next-date">下次驱虫：{{ formatDate(record.nextDate) }}</p>
             <p class="weight">体重：{{ record.weight }}kg</p>
-            <p class="dosage">用药剂量：{{ record.dosage }}ml</p>
+            <p class="notes" v-if="record.address">地址：{{ record.address }}</p>
             <p class="notes" v-if="record.notes">备注：{{ record.notes }}</p>
           </div>
           <div class="record-status" :class="getStatusClass(record)">
@@ -47,57 +56,41 @@
       <el-form :model="recordForm" :rules="rules" ref="recordForm" label-width="100px">
         <el-form-item label="选择宠物" prop="petId">
           <el-select v-model="recordForm.petId" placeholder="请选择宠物" @change="handlePetChange">
-            <el-option
-              v-for="pet in pets"
-              :key="pet.id"
-              :label="pet.name"
-              :value="pet.id">
+            <el-option v-for="pet in pets" :key="pet.id" :label="pet.name" :value="pet.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="驱虫药名称" prop="medicineName">
-          <el-input v-model="recordForm.medicineName" placeholder="请输入驱虫药名称"></el-input>
+        <el-form-item label="驱虫药类型" prop="dewormType">
+          <el-select v-model="recordForm.dewormType" placeholder="请选择驱虫药类型">
+            <el-option label="体内" value="internal"></el-option>
+            <el-option label="体外" value="external"></el-option>
+            <el-option label="混合" value="mixed"></el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="驱虫日期" prop="medicineDate">
-          <el-date-picker
-            v-model="recordForm.medicineDate"
-            type="date"
-            placeholder="选择驱虫日期"
-            value-format="yyyy-MM-dd">
-          </el-date-picker>
+        <el-form-item label="驱虫药名称" prop="productName">
+          <el-input v-model="recordForm.productName" placeholder="请输入驱虫药名称"></el-input>
         </el-form-item>
-        <el-form-item label="下次驱虫" prop="nextDate">
-          <el-date-picker
-            v-model="recordForm.nextDate"
-            type="date"
-            placeholder="选择下次驱虫日期"
-            value-format="yyyy-MM-dd">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="体重(kg)" prop="weight">
-          <el-input-number 
-            v-model="recordForm.weight" 
-            :precision="1" 
-            :step="0.1"
-            :min="0"
-            placeholder="请输入宠物体重">
+        <el-form-item label="用药剂量 ml" prop="metering">
+          <el-input-number v-model="recordForm.metering" :precision="1" :step="0.1" :min="0" placeholder="请输入用药剂量">
           </el-input-number>
         </el-form-item>
-        <el-form-item label="用药剂量(ml)" prop="dosage">
-          <el-input-number 
-            v-model="recordForm.dosage" 
-            :precision="1" 
-            :step="0.1"
-            :min="0"
-            placeholder="请输入用药剂量">
+        <el-form-item label="驱虫日期" prop="dewormDate">
+          <el-date-picker v-model="recordForm.dewormDate" type="date" placeholder="选择驱虫日期" value-format="yyyy-MM-dd">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="接种间隔:月" prop="gap">
+          <el-input-number v-model="recordForm.gap" :min="0" :max="48" placeholder="接种间隔(月)"></el-input-number>
+        </el-form-item>
+        <el-form-item label="体重 kg" prop="weight">
+          <el-input-number v-model="recordForm.weight" :precision="1" :step="0.1" :min="0" placeholder="请输入宠物体重">
           </el-input-number>
+        </el-form-item>
+        <el-form-item label="地点">
+          <el-input v-model="recordForm.address" placeholder="请输入驱虫地点">
+          </el-input>
         </el-form-item>
         <el-form-item label="备注">
-          <el-input
-            type="textarea"
-            v-model="recordForm.notes"
-            placeholder="请输入备注信息"
-            :rows="3">
+          <el-input type="textarea" v-model="recordForm.notes" placeholder="请输入备注信息" :rows="3">
           </el-input>
         </el-form-item>
       </el-form>
@@ -110,6 +103,9 @@
 </template>
 
 <script>
+
+import { getPets } from '@/api/pets'
+import { getDewormingRecords, createDewormingRecord, updateDewormingRecord, deleteDewormingRecord } from '@/api/deworming'
 export default {
   name: 'Deworming',
   data() {
@@ -119,34 +115,27 @@ export default {
       dialogVisible: false,
       dialogTitle: '添加驱虫记录',
       submitLoading: false,
-      recordForm: {
-        id: null,
-        petId: '',
-        petName: '',
-        medicineName: '',
-        medicineDate: '',
-        nextDate: '',
-        weight: '',
-        dosage: '',
-        notes: ''
-      },
+      recordForm: {},
       rules: {
         petId: [
           { required: true, message: '请选择宠物', trigger: 'change' }
         ],
-        medicineName: [
+        dewormType: [
+          { required: true, message: '请驱虫药类型', trigger: 'change' }
+        ],
+        productName: [
           { required: true, message: '请输入驱虫药名称', trigger: 'blur' }
         ],
-        medicineDate: [
+        dewormDate: [
           { required: true, message: '请选择驱虫日期', trigger: 'change' }
         ],
-        nextDate: [
-          { required: true, message: '请选择下次驱虫日期', trigger: 'change' }
+        gap: [
+          { required: true, message: '请选择驱虫间隔', trigger: 'blur' }
         ],
         weight: [
           { required: true, message: '请输入宠物体重', trigger: 'blur' }
         ],
-        dosage: [
+        metering: [
           { required: true, message: '请输入用药剂量', trigger: 'blur' }
         ]
       }
@@ -160,52 +149,19 @@ export default {
     // 获取驱虫记录列表
     async fetchRecords() {
       try {
-        // TODO: 调用获取驱虫记录列表API
-        // const response = await getDewormingRecords()
-        // this.records = response.data
-        
-        // 模拟数据
-        this.records = [
-          {
-            id: 1,
-            petId: 1,
-            petName: '小白',
-            medicineName: '拜耳驱虫药',
-            medicineDate: '2024-02-20',
-            nextDate: '2024-05-20',
-            weight: 25.5,
-            dosage: 2.5,
-            notes: '定期驱虫'
-          },
-          {
-            id: 2,
-            petId: 2,
-            petName: '咪咪',
-            medicineName: '福来恩滴剂',
-            medicineDate: '2024-02-15',
-            nextDate: '2024-03-15',
-            weight: 3.5,
-            dosage: 0.5,
-            notes: ''
-          }
-        ]
+        const response = await getDewormingRecords()
+        this.records = response.data
       } catch (error) {
         this.$message.error('获取驱虫记录失败')
       }
     },
 
     // 获取宠物列表
+
     async fetchPets() {
       try {
-        // TODO: 调用获取宠物列表API
-        // const response = await getPets()
-        // this.pets = response.data
-        
-        // 模拟数据
-        this.pets = [
-          { id: 1, name: '小白' },
-          { id: 2, name: '咪咪' }
-        ]
+        const response = await getPets()
+        this.pets = response.data
       } catch (error) {
         this.$message.error('获取宠物列表失败')
       }
@@ -217,12 +173,13 @@ export default {
       this.recordForm = {
         id: null,
         petId: '',
-        petName: '',
-        medicineName: '',
-        medicineDate: '',
-        nextDate: '',
+        dewormType: '',
+        productName: '',
+        metering: '',
         weight: '',
-        dosage: '',
+        dewormDate: '',
+        gap: '',
+        address: '',
         notes: ''
       }
       this.dialogVisible = true
@@ -250,7 +207,7 @@ export default {
         } catch (error) {
           this.$message.error('删除失败')
         }
-      }).catch(() => {})
+      }).catch(() => { })
     },
 
     // 提交表单
@@ -259,9 +216,6 @@ export default {
         if (valid) {
           try {
             this.submitLoading = true
-            // TODO: 调用添加/编辑记录API
-            // const response = await (this.recordForm.id ? updateDewormingRecord(this.recordForm) : createDewormingRecord(this.recordForm))
-            
             // 模拟API调用
             if (this.recordForm.id) {
               const index = this.records.findIndex(record => record.id === this.recordForm.id)
@@ -270,13 +224,8 @@ export default {
                 petName: this.getPetName(this.recordForm.petId)
               }
             } else {
-              this.records.push({
-                ...this.recordForm,
-                id: Date.now(),
-                petName: this.getPetName(this.recordForm.petId)
-              })
+              await createDewormingRecord(this.recordForm)
             }
-
             this.$message.success(this.recordForm.id ? '编辑成功' : '添加成功')
             this.dialogVisible = false
             this.fetchRecords()
@@ -314,7 +263,7 @@ export default {
       const now = new Date()
       const nextDate = new Date(record.nextDate)
       const diffDays = Math.ceil((nextDate - now) / (1000 * 60 * 60 * 24))
-      
+
       if (diffDays < 0) return 'status-expired'
       if (diffDays <= 7) return 'status-upcoming'
       return 'status-normal'
@@ -325,11 +274,19 @@ export default {
       const now = new Date()
       const nextDate = new Date(record.nextDate)
       const diffDays = Math.ceil((nextDate - now) / (1000 * 60 * 60 * 24))
-      
+
       if (diffDays < 0) return '已过期'
       if (diffDays <= 7) return '即将到期'
       return '正常'
-    }
+    },
+    getDewormType(type) {
+      const typeMap = {
+        'internal': '体内',
+        'external': '体外',
+        'mixed': '混合'
+      }
+      return typeMap[type] || type || '未知'
+    },
   }
 }
 </script>
@@ -343,8 +300,13 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .deworming-card {
@@ -363,6 +325,7 @@ export default {
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -490,6 +453,12 @@ export default {
   margin-bottom: 20px;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
   .deworming-card {
@@ -508,4 +477,4 @@ export default {
     padding: 15px;
   }
 }
-</style> 
+</style>
