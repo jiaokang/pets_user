@@ -21,16 +21,17 @@ export function createDewormingRecord(data) {
 // 更新驱虫记录
 export function updateDewormingRecord(data) {
   return request({
-    url: `/deworming-records/${data.id}`,
-    method: 'put',
+    url: `/api/deworm/update`,
+    method: 'post',
     data
   })
 }
 
 // 删除驱虫记录
-export function deleteDewormingRecord(id) {
+export function deleteDewormingRecord(data) {
   return request({
-    url: `/deworming-records/${id}`,
-    method: 'delete'
+    url: `/api/deworm/delete`,
+    method: 'post',
+    data
   })
 } 

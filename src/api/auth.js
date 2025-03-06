@@ -24,14 +24,11 @@ export function register(data) {
   })
 }
 
-export function sendEmailCode(email, type = 'login') {
+export function sendEmailCode(email) {
   return request({
-    url: '/api/auth/email/code',
-    method: 'post',
-    data: {
-      email,
-      type // 可以是 'login' 或 'register'
-    }
+    url: '/api/auth/getEmailVerifyCode',
+    method: 'get',
+    params: { email }
   })
 }
 
