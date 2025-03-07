@@ -61,12 +61,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="头像">
-          <el-upload
-            class="avatar-uploader"
-            action="/api/upload"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload">
+          <el-upload class="avatar-uploader" action="/dummy-url" :http-request="handleUpload" :show-file-list="false"
+            :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
             <img v-if="petForm.avatar" :src="petForm.avatar" class="avatar">
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
@@ -82,7 +78,7 @@
 
 <script>
 
-import { addPet, getPets,deletePet,updatePet } from '@/api/pets'
+import { addPet, getPets, deletePet, updatePet, uploadFile } from '@/api/pets'
 
 export default {
   name: 'Pets',
@@ -127,7 +123,15 @@ export default {
       try {
         // TODO: 调用获取宠物列表API
         const response = await getPets()
-        this.pets = response.data
+        this.pets = response.data.map(pet => {
+            // 生成图像 URL
+            const imageId = pet.avatar;
+            const imageUrl = `${process.env.VUE_APP_BASE_API}/api/avatar/avatars/${imageId}`;
+            return {
+              ...pet,
+              avatar: imageUrl
+            };
+          });
       } catch (error) {
         this.$message.error('获取宠物列表失败')
       }
@@ -169,7 +173,7 @@ export default {
         } catch (error) {
           this.$message.error('删除失败')
         }
-      }).catch(() => {})
+      }).catch(() => { })
     },
 
     // 提交表单
@@ -178,9 +182,9 @@ export default {
         if (valid) {
           try {
             this.submitLoading = true
-            
+
             if (this.petForm.id) {
-             await updatePet(this.petForm)
+              await updatePet(this.petForm)
             } else {
               // 调用添加宠物API
               const response = await addPet(this.petForm)
@@ -201,7 +205,11 @@ export default {
 
     // 头像上传成功
     handleAvatarSuccess(response) {
-      this.petForm.avatar = response.url
+      if (response && response.data) {
+        // 生成图像 URL
+        const imageUrl = `/api/images/${response.data}`;
+        this.petForm.avatar = imageUrl; // 使用返回的头像地址
+      }
     },
 
     // 头像上传前的验证
@@ -217,6 +225,15 @@ export default {
       }
 
       return isImage && isLt2M
+    },
+    // 添加自定义上传方法
+    async handleUpload({ file }) {
+      try {
+        const response = await uploadFile(file)
+        this.handleAvatarSuccess(response)
+      } catch (error) {
+        this.$message.error('上传头像失败')
+      }
     }
   }
 }
@@ -232,8 +249,13 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .pets-card {
@@ -252,6 +274,7 @@ export default {
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -409,10 +432,12 @@ export default {
 }
 
 .male {
-  color: #409EFF;  /* 蓝色 */
+  color: #409EFF;
+  /* 蓝色 */
 }
 
 .female {
-  color: #FF69B4;  /* 粉色 */
+  color: #FF69B4;
+  /* 粉色 */
 }
-</style> 
+</style>

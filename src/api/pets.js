@@ -16,6 +16,20 @@ export function addPet(data) {
     data
   })
 }
+// 上传文件
+export function uploadFile(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  return request({
+    url: '/api/avatar/uploadAvatar',
+    method: 'post',
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    data: formData
+  })
+}
 
 // 更新宠物信息
 export function updatePet(data) {
@@ -35,4 +49,4 @@ export function deletePet(id) {
   })
 }
 
-export default request 
+export default request
