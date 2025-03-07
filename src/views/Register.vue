@@ -151,7 +151,7 @@ export default {
         ],
         code: [
           { required: true, message: '请输入验证码', trigger: 'blur' },
-          { len: 6, message: '验证码长度为 6 位', trigger: 'blur' }
+          { len: 5, message: '验证码长度为 6 位', trigger: 'blur' }
         ]
       }
     }

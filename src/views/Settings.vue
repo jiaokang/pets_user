@@ -17,9 +17,7 @@
               <span class="setting-title">疫苗接种提醒</span>
               <span class="setting-desc">开启后将在疫苗接种日期前7天提醒</span>
             </div>
-            <el-switch
-              v-model="settings.vaccineNotification"
-              @change="handleSettingChange('vaccineNotification')">
+            <el-switch v-model="settings.VACCINE_NOTIFY" @change="handleSettingChange('VACCINE_NOTIFY')">
             </el-switch>
           </div>
           <div class="setting-item">
@@ -27,9 +25,7 @@
               <span class="setting-title">驱虫提醒</span>
               <span class="setting-desc">开启后将在驱虫日期前7天提醒</span>
             </div>
-            <el-switch
-              v-model="settings.dewormingNotification"
-              @change="handleSettingChange('dewormingNotification')">
+            <el-switch v-model="settings.DEWORMING_NOTIFY" @change="handleSettingChange('DEWORMING_NOTIFY')">
             </el-switch>
           </div>
         </div>
@@ -42,9 +38,7 @@
               <span class="setting-title">深色模式</span>
               <span class="setting-desc">切换深色/浅色主题</span>
             </div>
-            <el-switch
-              v-model="settings.darkMode"
-              @change="handleSettingChange('darkMode')">
+            <el-switch v-model="settings.DARK_MODE" @change="handleSettingChange('DARK_MODE')">
             </el-switch>
           </div>
         </div>
@@ -54,54 +48,36 @@
 </template>
 
 <script>
+
+import { getSetting,setSetting } from '@/api/setting'
+
 export default {
   name: 'Settings',
   data() {
     return {
-      settings: {
-        vaccineNotification: true,
-        dewormingNotification: true,
-        darkMode: false,
-        compactMode: false,
-        dataSync: true,
-        usageStats: true
-      }
+      settings: {}
     }
   },
   created() {
     // 从本地存储加载设置
-    const savedSettings = localStorage.getItem('userSettings')
-    if (savedSettings) {
-      this.settings = { ...this.settings, ...JSON.parse(savedSettings) }
-    }
+    getSetting().then(res => {
+      // 转换字符串为布尔值
+      const data = res.data
+      Object.keys(data).forEach(key => {
+        if (data[key] === 'true' || data[key] === 'false') {
+          data[key] = data[key] === 'true'
+        }
+      })
+      this.settings = data
+    })
   },
   methods: {
     handleSettingChange(key) {
-      // 保存设置到本地存储
-      localStorage.setItem('userSettings', JSON.stringify(this.settings))
-      
-      // 根据设置变更执行相应操作
-      switch (key) {
-        case 'darkMode':
-          this.toggleDarkMode()
-          break
-        case 'compactMode':
-          this.toggleCompactMode()
-          break
-        default:
-          break
+      let data = {
+        item: key
       }
+      setSetting(data);
     },
-    
-    toggleDarkMode() {
-      // 实现深色模式切换逻辑
-      document.body.classList.toggle('dark-mode', this.settings.darkMode)
-    },
-    
-    toggleCompactMode() {
-      // 实现紧凑布局切换逻辑
-      document.body.classList.toggle('compact-mode', this.settings.compactMode)
-    }
   }
 }
 </script>
@@ -115,8 +91,13 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .settings-card {
@@ -135,6 +116,7 @@ export default {
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -226,4 +208,4 @@ export default {
     margin-bottom: 10px;
   }
 }
-</style> 
+</style>
