@@ -84,6 +84,9 @@ export default {
         // 清除本地存储的token和用户信息
         localStorage.removeItem('token')
         localStorage.removeItem('username')
+
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('username')
         
         this.$message.success('退出登录成功')
         

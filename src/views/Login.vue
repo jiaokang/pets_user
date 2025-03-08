@@ -164,9 +164,17 @@ export default {
       console.log(response)
       // 保存token到本地存储
       if (response.code === "00000") {
-        localStorage.setItem('token', response.data.token)
-        // 保存用户名到本地存储
-        localStorage.setItem('nickName', response.data.nickName)
+        if (rememberMe) {
+          // 保存token到本地存储
+          localStorage.setItem('token', response.data.token)
+          // 保存用户名到本地存储
+          localStorage.setItem('nickName', response.data.nickName)
+        } else {
+          // 保存token到本地存储
+          sessionStorage.setItem('token', response.data.token)
+          // 保存用户名到本地存储
+          sessionStorage.setItem('nickName', response.data.nickName)
+        }
       }
 
       // 显示登录成功消息

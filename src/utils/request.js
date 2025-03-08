@@ -12,7 +12,7 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // 在请求发送前可以进行一些处理，例如添加token
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = token
     }
